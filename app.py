@@ -49,8 +49,13 @@ def process_template():
     file.save(filepath)
 
     try:
-        # Read and process Excel file (OPTIMIZED)
-        df = pd.read_excel(filepath, sheet_name='DepoCrossDock Rapor')
+        # Excel dosyasında sheet kontrolü
+        try:
+            df = pd.read_excel(filepath, sheet_name='DepoCrossDock Rapor')
+        except ValueError as e:
+            return {'error': "Excel dosyasında 'DepoCrossDock Rapor' adlı bir sayfa (sheet) bulunamadı. Lütfen doğru dosyayı yükleyin."}, 400
+        except Exception as e:
+            return {'error': f'Excel dosyası okunamadı: {str(e)}'}, 400
         # Tek seferde filtrele
         mask = (df['Eleme Nedenleri'] == 'Sortlanmalı') & \
                (~df['Sort Tanım'].str.contains('(ticaret|yardım|franchise|t99)', case=False, na=False))
