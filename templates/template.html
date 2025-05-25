@@ -465,6 +465,62 @@
             font-weight: 500;
             text-align: center;
         }
+
+        /* Hata Popup Stili */
+        .error-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            backdrop-filter: blur(3px);
+        }
+        .error-popup {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            padding: 2rem;
+            z-index: 2100;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            animation: errorPopupFadeIn 0.3s ease;
+            border-top: 5px solid #dc3545;
+        }
+        .error-popup-title {
+            color: #dc3545;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .error-popup-content {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        .error-popup-close {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+        }
+        .error-popup-close:hover {
+            background: #b52a37;
+            transform: translateY(-2px);
+        }
+        @keyframes errorPopupFadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
     </style>
 </head>
 <body>
@@ -508,6 +564,16 @@
             </ol>
         </div>
         <button class="instruction-close-btn" onclick="closeInstructionPopup()">Kapat</button>
+    </div>
+
+    <!-- Hata Popup -->
+    <div class="error-popup-overlay" id="errorOverlay"></div>
+    <div class="error-popup" id="errorPopup">
+        <div class="error-popup-title">
+            <i class="fas fa-exclamation-circle me-2"></i>Hata!
+        </div>
+        <div class="error-popup-content" id="errorMessage"></div>
+        <button class="error-popup-close" onclick="closeErrorPopup()">Tamam</button>
     </div>
 
     <div class="container">
@@ -615,7 +681,7 @@
             waitingMsgInterval = setInterval(() => {
                 msgElem.textContent = waitingMessages[waitingMsgIndex];
                 waitingMsgIndex = (waitingMsgIndex + 1) % waitingMessages.length;
-            }, 2500);
+            }, 4000);
         }
         function stopWaitingMessages() {
             if (waitingMsgInterval) {
@@ -662,24 +728,34 @@
                 document.getElementById('stopBtn').classList.remove('hidden');
                 document.getElementById('loadingMessageContainer').style.display = 'flex';
                 startWaitingMessages();
-                
                 // Form verilerini gönder
                 const formData = new FormData(this.closest('form'));
                 fetch('/process_template', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => {
+                .then(async response => {
                     if (response.ok) {
+                        let data;
+                        try {
+                            data = await response.json();
+                        } catch (e) {
+                            data = { error: await response.text() };
+                        }
                         document.getElementById('stopBtn').classList.add('hidden');
                         document.getElementById('downloadBtn').classList.remove('hidden');
                         document.getElementById('successMessage').style.display = 'block';
                         document.getElementById('loadingMessageContainer').style.display = 'none';
                         stopWaitingMessages();
                     } else {
-                        return response.json().then(data => {
-                            throw new Error(data.error || 'İşlem başarısız oldu');
-                        });
+                        let errorText;
+                        try {
+                            const errorData = await response.json();
+                            errorText = errorData.error || 'İşlem başarısız oldu';
+                        } catch (e) {
+                            errorText = await response.text();
+                        }
+                        throw new Error(errorText);
                     }
                 })
                 .catch(error => {
@@ -751,6 +827,27 @@
             document.getElementById('instructionOverlay').style.display = 'none';
             document.getElementById('instructionPopup').style.display = 'none';
         }
+
+        function showErrorPopup(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorOverlay').style.display = 'block';
+            document.getElementById('errorPopup').style.display = 'block';
+        }
+
+        function closeErrorPopup() {
+            document.getElementById('errorOverlay').style.display = 'none';
+            document.getElementById('errorPopup').style.display = 'none';
+        }
+
+        // Enter tuşuna basıldığında popup'ı kapat
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && document.getElementById('errorPopup').style.display === 'block') {
+                closeErrorPopup();
+            }
+        });
+
+        // Popup dışına tıklandığında kapat
+        document.getElementById('errorOverlay').addEventListener('click', closeErrorPopup);
     </script>
 </body>
 </html> 
