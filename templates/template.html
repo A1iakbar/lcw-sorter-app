@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorter Template Hazırlama - LC Waikiki</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --lcw-blue: #005baa;
+            --lcw-light-blue: #007bff;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #c6dff6 0%, #74a3d2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        .floating-icon {
+            position: absolute;
+            opacity: 0.1;
+            font-size: 2rem;
+            animation: float 15s infinite linear;
+            z-index: 0;
+            color: var(--lcw-blue);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+            100% {
+                transform: translateY(0) rotate(360deg);
+            }
+        }
+
+        .main-title {
+            color: var(--lcw-blue);
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideDown 0.8s ease forwards 0.2s;
+        }
+
+        .upload-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1rem auto;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: slideUp 0.8s ease forwards 0.4s;
+        }
+
+        .upload-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 91, 170, 0.25);
+            border-color: var(--lcw-blue);
+        }
+
+        .btn-primary {
+            background-color: var(--lcw-blue);
+            border-color: var(--lcw-blue);
+            padding: 1rem 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 91, 170, 0.3);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 91, 170, 0.4);
+        }
+
+        .sepet-input {
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .sepet-input:hover {
+            transform: translateX(5px);
+        }
+
+        .back-link {
+            color: var(--lcw-blue);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 91, 170, 0.1);
+        }
+
+        .back-link i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--lcw-light-blue);
+            transform: translateX(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .back-link:hover i {
+            transform: translateX(-3px);
+        }
+
+        .file-upload-container {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .file-upload-container:hover {
+            border-color: var(--lcw-blue);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .file-upload-icon {
+            font-size: 3rem;
+            color: var(--lcw-blue);
+            margin-bottom: 1rem;
+        }
+
+        .sepet-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--lcw-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            padding: 1rem 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-danger::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .btn-danger:hover::before {
+            left: 100%;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        .button-container {
+            position: relative;
+            min-height: 60px;
+        }
+
+        .btn {
+            transition: all 0.3s ease;
+        }
+
+        .btn.hidden {
+            display: none;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        .success-message {
+            display: none;
+            color: #198754;
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(25, 135, 84, 0.1);
+            border-radius: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .btn-success {
+            background-color: #198754;
+            border-color: #198754;
+            padding: 1rem 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
+        }
+
+        .btn-success::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .btn-success:hover::before {
+            left: 100%;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4);
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            padding: 1rem 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+            color: #000;
+        }
+
+        .btn-warning::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .btn-warning:hover::before {
+            left: 100%;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+            background-color: #ffca2c;
+            border-color: #ffc720;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Talimat Popup */
+        .instruction-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 2000;
+            backdrop-filter: blur(2px);
+        }
+        .instruction-popup {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            padding: 2.5rem 4.5rem;
+            z-index: 2100;
+            max-width: 900px;
+            width: 98%;
+            text-align: center;
+            animation: popupFadeIn 0.3s ease;
+        }
+        .instruction-popup-title {
+            color: var(--lcw-blue);
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .instruction-popup-content {
+            color: #333;
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+        }
+        .instruction-close-btn {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 0.7rem 2rem;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.15);
+        }
+        .instruction-close-btn:hover {
+            background: #b52a37;
+            transform: translateY(-2px);
+        }
+        @keyframes popupFadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        .loading-message-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem 0 1rem 0;
+            animation: fadeIn 0.4s;
+        }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 7px solid #f3f3f3;
+            border-top: 7px solid var(--lcw-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1.2rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-message-text {
+            color: var(--lcw-blue);
+            font-size: 1.15rem;
+            font-weight: 500;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Icons -->
+    <div class="floating-icon" style="top: 10%; left: 5%;"><i class="fas fa-tshirt"></i></div>
+    <div class="floating-icon" style="top: 20%; right: 10%;"><i class="fas fa-socks"></i></div>
+    <div class="floating-icon" style="bottom: 30%; left: 15%;"><i class="fas fa-hat-cowboy"></i></div>
+    <div class="floating-icon" style="bottom: 20%; right: 20%;"><i class="fas fa-glasses"></i></div>
+    <div class="floating-icon" style="top: 50%; left: 30%;"><i class="fas fa-shoe-prints"></i></div>
+    <div class="floating-icon" style="top: 40%; right: 30%;"><i class="fas fa-vest"></i></div>
+    <div class="floating-icon" style="top: 70%; left: 25%;"><i class="fas fa-shirt"></i></div>
+    <div class="floating-icon" style="top: 30%; right: 40%;"><i class="fas fa-hat-wizard"></i></div>
+
+    <!-- Talimat Popup -->
+    <div class="instruction-popup-overlay" id="instructionOverlay"></div>
+    <div class="instruction-popup" id="instructionPopup">
+        <div class="instruction-popup-title">Dosya Yükleme Talimatı</div>
+        <div class="instruction-popup-content">
+            <ol style="text-align:left; padding-left:1.2em;">
+                <li><b>Dosya Boyutu:</b><br>Yükleyeceğiniz Excel dosyasının boyutu <b>en fazla 1 GB</b> olmalıdır.</li>
+                <li style="margin-top:0.7em;"><b>Sayfa Adı (Sheet Name):</b><br>Excel dosyanızda mutlaka <b>'DepoCrossDock Rapor'</b> adlı bir sayfa (sheet) bulunmalıdır.</li>
+                <li style="margin-top:0.7em;"><b>Dosya Formatı:</b><br>Sadece <b>.xlsx</b> veya <b>.xls</b> uzantılı dosyalar kabul edilir.</li>
+                <li style="margin-top:0.7em;"><b>Zorunlu Sütunlar:</b><br>Excel dosyanızda aşağıdaki sütunlar eksiksiz bulunmalıdır:
+                    <ul style="margin-top:0.3em;">
+                        <li>Eleme Nedenleri</li>
+                        <li>Sort Tanım</li>
+                        <li>Mağaza</li>
+                        <li>KirikUrunMu</li>
+                        <li>MerchYasGrupKod</li>
+                        <li>MerchMarkaYasGrupKod</li>
+                        <li>KlasmanGrupTanim</li>
+                        <li>Klasman Ad</li>
+                        <li>Ürün Klasman</li>
+                    </ul>
+                </li>
+                <li style="margin-top:0.7em;"><b>Eleme Nedenleri:</b><br>
+                    Seçilecek verilerde <b>Eleme Nedenleri</b> sütununda mutlaka <b>Sortlanmalı</b> değeri olmalıdır.<br>
+                    <span style="color:#b52a37;">"Sortlanacak" veya başka bir ifade kullanılırsa sistem düzgün çalışmayabilir.</span>
+                </li>
+                <li style="margin-top:0.7em;"><b>Veri Temizliği:</b><br>Dosyanızda gereksiz boş satır veya sütun olmamasına dikkat ediniz.</li>
+            </ol>
+        </div>
+        <button class="instruction-close-btn" onclick="closeInstructionPopup()">Kapat</button>
+    </div>
+
+    <div class="container">
+        <a href="/index" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Ana Sayfaya Dön
+        </a>
+        <h1 class="main-title">Sorter Template Hazırlama</h1>
+
+        <div class="upload-container">
+            <form action="/process_template" method="post" enctype="multipart/form-data">
+                <div class="file-upload-container">
+                    <div style="text-align:left; margin-bottom:0.5rem;">
+                        <a href="#" id="showInstruction" style="color:var(--lcw-blue); font-weight:bold; text-decoration:underline; cursor:pointer; font-size:1.08rem;">
+                            <i class="fas fa-info-circle me-1"></i>Nasıl dosya yüklemeliyim?
+                        </a>
+                    </div>
+                    <i class="fas fa-file-excel file-upload-icon"></i>
+                    <label for="file" class="form-label">Excel Dosyası Seçin</label>
+                    <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls" required>
+                    <div class="error-message" id="fileError">Lütfen bir Excel dosyası seçin</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="sepet-input">
+                            <div class="sepet-number">1. Sepet</div>
+                            <label for="sepet1" class="form-label">Göz Sayısı</label>
+                            <input type="number" class="form-control" id="sepet1" name="sepet1" required min="0">
+                            <div class="error-message" id="sepet1Error">Lütfen göz sayısını girin</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="sepet-input">
+                            <div class="sepet-number">2. Sepet</div>
+                            <label for="sepet2" class="form-label">Göz Sayısı</label>
+                            <input type="number" class="form-control" id="sepet2" name="sepet2" required min="0">
+                            <div class="error-message" id="sepet2Error">Lütfen göz sayısını girin</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="sepet-input">
+                            <div class="sepet-number">3. Sepet</div>
+                            <label for="sepet3" class="form-label">Göz Sayısı</label>
+                            <input type="number" class="form-control" id="sepet3" name="sepet3" required min="0">
+                            <div class="error-message" id="sepet3Error">Lütfen göz sayısını girin</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="sepet-input">
+                            <div class="sepet-number">4. Sepet</div>
+                            <label for="sepet4" class="form-label">Göz Sayısı</label>
+                            <input type="number" class="form-control" id="sepet4" name="sepet4" required min="0">
+                            <div class="error-message" id="sepet4Error">Lütfen göz sayısını girin</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4 button-container">
+                    <button type="submit" class="btn btn-primary btn-lg" id="createBtn">
+                        <i class="fas fa-magic me-2"></i>Template Oluştur
+                    </button>
+                    <button type="button" class="btn btn-danger btn-lg hidden" id="stopBtn">
+                        <i class="fas fa-stop-circle me-2"></i>Durdur
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg hidden" id="downloadBtn">
+                        <i class="fas fa-download me-2"></i>Excel'i İndir
+                    </button>
+                    <button type="button" class="btn btn-warning btn-lg" id="clearBtn">
+                        <i class="fas fa-broom me-2"></i>Temizle
+                    </button>
+                </div>
+                <div class="loading-message-container" id="loadingMessageContainer">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-message-text">Lütfen bekleyiniz, dosyanız hazırlanıyor...</div>
+                </div>
+                <div class="success-message" id="successMessage">
+                    <i class="fas fa-check-circle me-2"></i>Excel dosyası başarıyla hazırlandı!
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mizahi bekleme mesajları
+        const waitingMessages = [
+            "Lütfen bekleyiniz, dosyanız hazırlanıyor...",
+            "Az kaldı, biraz daha sabret.",
+            "'Daha ne kadar sürecek bu eziyet?' diyorsun ama döz :)",
+            "LC Waikiki robotları Excel'inizi işliyor...",
+            "Kahveni tazele, dosyan neredeyse hazır!",
+            "Sabır, başarıyı getirir... (ve Excel'i)",
+            "Hala buradaysan, az sonra mutlu olacaksın!",
+            "Son kontroller yapılıyor, az sonra bitti!"
+        ];
+        let waitingMsgIndex = 0;
+        let waitingMsgInterval = null;
+
+        function startWaitingMessages() {
+            const msgElem = document.querySelector('.loading-message-text');
+            if (!msgElem) return;
+            msgElem.textContent = waitingMessages[0];
+            waitingMsgIndex = 1;
+            waitingMsgInterval = setInterval(() => {
+                msgElem.textContent = waitingMessages[waitingMsgIndex];
+                waitingMsgIndex = (waitingMsgIndex + 1) % waitingMessages.length;
+            }, 2500);
+        }
+        function stopWaitingMessages() {
+            if (waitingMsgInterval) {
+                clearInterval(waitingMsgInterval);
+                waitingMsgInterval = null;
+            }
+        }
+
+        document.getElementById('createBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Form validasyonu
+            let isValid = true;
+            const fileInput = document.getElementById('file');
+            const fileError = document.getElementById('fileError');
+            
+            // Dosya kontrolü
+            if (!fileInput.files.length) {
+                fileInput.classList.add('is-invalid');
+                fileError.style.display = 'block';
+                isValid = false;
+            } else {
+                fileInput.classList.remove('is-invalid');
+                fileError.style.display = 'none';
+            }
+            
+            // Sepet sayıları kontrolü
+            for (let i = 1; i <= 4; i++) {
+                const sepetInput = document.getElementById(`sepet${i}`);
+                const sepetError = document.getElementById(`sepet${i}Error`);
+                
+                if (!sepetInput.value || sepetInput.value < 0) {
+                    sepetInput.classList.add('is-invalid');
+                    sepetError.style.display = 'block';
+                    isValid = false;
+                } else {
+                    sepetInput.classList.remove('is-invalid');
+                    sepetError.style.display = 'none';
+                }
+            }
+            
+            if (isValid) {
+                this.classList.add('hidden');
+                document.getElementById('stopBtn').classList.remove('hidden');
+                document.getElementById('loadingMessageContainer').style.display = 'flex';
+                startWaitingMessages();
+                
+                // Form verilerini gönder
+                const formData = new FormData(this.closest('form'));
+                fetch('/process_template', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('stopBtn').classList.add('hidden');
+                        document.getElementById('downloadBtn').classList.remove('hidden');
+                        document.getElementById('successMessage').style.display = 'block';
+                        document.getElementById('loadingMessageContainer').style.display = 'none';
+                        stopWaitingMessages();
+                    } else {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'İşlem başarısız oldu');
+                        });
+                    }
+                })
+                .catch(error => {
+                    showErrorPopup(error.message);
+                    this.classList.remove('hidden');
+                    document.getElementById('stopBtn').classList.add('hidden');
+                    document.getElementById('loadingMessageContainer').style.display = 'none';
+                    stopWaitingMessages();
+                });
+            }
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', function() {
+            window.location.reload();
+            document.getElementById('loadingMessageContainer').style.display = 'none';
+            stopWaitingMessages();
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            window.location.href = '/download_template';
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            // Form alanlarını temizle
+            document.getElementById('file').value = '';
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`sepet${i}`).value = '';
+            }
+            
+            // Hata mesajlarını gizle
+            document.querySelectorAll('.error-message').forEach(msg => {
+                msg.style.display = 'none';
+            });
+            
+            // Input alanlarındaki hata stillerini kaldır
+            document.querySelectorAll('.is-invalid').forEach(input => {
+                input.classList.remove('is-invalid');
+            });
+            
+            // Başarı mesajını gizle
+            document.getElementById('successMessage').style.display = 'none';
+            
+            // Butonları sıfırla
+            document.getElementById('createBtn').classList.remove('hidden');
+            document.getElementById('stopBtn').classList.add('hidden');
+            document.getElementById('downloadBtn').classList.add('hidden');
+            document.getElementById('loadingMessageContainer').style.display = 'none';
+            stopWaitingMessages();
+        });
+
+        // Input alanlarına focus olduğunda hata mesajlarını gizle
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.classList.remove('is-invalid');
+                const errorElement = document.getElementById(`${this.id}Error`);
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                }
+            });
+        });
+
+        // Talimat popup fonksiyonları
+        document.getElementById('showInstruction').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('instructionOverlay').style.display = 'block';
+            document.getElementById('instructionPopup').style.display = 'block';
+        });
+        function closeInstructionPopup() {
+            document.getElementById('instructionOverlay').style.display = 'none';
+            document.getElementById('instructionPopup').style.display = 'none';
+        }
+    </script>
+</body>
+</html> 
