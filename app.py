@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, jsonify
 import pandas as pd
 import os
 from werkzeug.utils import secure_filename
@@ -30,10 +30,10 @@ def kota():
 @app.route('/process_template', methods=['POST'])
 def process_template():
     if 'file' not in request.files:
-        return 'No file uploaded', 400
+        return jsonify({'error': 'No file uploaded'}), 400
     file = request.files['file']
     if file.filename == '':
-        return 'No file selected', 400
+        return jsonify({'error': 'No file selected'}), 400
 
     # Get sepet limits from form
     row_limits = [
@@ -53,9 +53,9 @@ def process_template():
         try:
             df = pd.read_excel(filepath, sheet_name='DepoCrossDock Rapor')
         except ValueError as e:
-            return {'error': "Excel dosyasında 'DepoCrossDock Rapor' adlı bir sayfa (sheet) bulunamadı. Lütfen doğru dosyayı yükleyin."}, 400
+            return jsonify({'error': "Excel dosyasında 'DepoCrossDock Rapor' adlı bir sayfa (sheet) bulunamadı. Lütfen doğru dosyayı yükleyin."}), 400
         except Exception as e:
-            return {'error': f'Excel dosyası okunamadı: {str(e)}'}, 400
+            return jsonify({'error': f'Excel dosyası okunamadı: {str(e)}'}), 400
         # Tek seferde filtrele
         mask = (df['Eleme Nedenleri'] == 'Sortlanmalı') & \
                (~df['Sort Tanım'].str.contains('(ticaret|yardım|franchise|t99)', case=False, na=False))
@@ -110,9 +110,9 @@ def process_template():
         # Save processed file
         output_path = os.path.join(app.config['UPLOAD_FOLDER'], 'final_template.xlsx')
         dfy.to_excel(output_path, index=False)
-        return 'success', 200
+        return jsonify({'status': 'success'}), 200
     except Exception as e:
-        return f'Error processing file: {str(e)}', 500
+        return jsonify({'error': f'Error processing file: {str(e)}'}), 500
 
 @app.route('/download_template')
 def download_template():
