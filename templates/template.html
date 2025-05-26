@@ -663,7 +663,7 @@
         const waitingMessages = [
             "Lütfen bekleyiniz, dosyanız hazırlanıyor...",
             "Az kaldı, biraz daha sabret.",
-            "'Daha ne kadar sürecek bu eziyet?' diyorsun ama döz :)",
+            "'Daha ne kadar sürecek bu eziyet?' diyorsun ama az daha bekle :)",
             "LC Waikiki robotları Excel'inizi işliyor...",
             "Kahveni tazele, dosyan neredeyse hazır!",
             "Sabır, başarıyı getirir... (ve Excel'i)",
@@ -734,33 +734,24 @@
                     method: 'POST',
                     body: formData
                 })
-                .then(async response => {
-                    if (response.ok) {
-                        let data;
-                        try {
-                            data = await response.json();
-                        } catch (e) {
-                            data = { error: await response.text() };
-                        }
-                        document.getElementById('stopBtn').classList.add('hidden');
-                        document.getElementById('downloadBtn').classList.remove('hidden');
-                        document.getElementById('successMessage').style.display = 'block';
-                        document.getElementById('loadingMessageContainer').style.display = 'none';
-                        stopWaitingMessages();
-                    } else {
-                        let errorText;
-                        try {
-                            const errorData = await response.json();
-                            errorText = errorData.error || 'İşlem başarısız oldu';
-                        } catch (e) {
-                            errorText = await response.text();
-                        }
-                        throw new Error(errorText);
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'İşlem başarısız oldu');
+                        });
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('stopBtn').classList.add('hidden');
+                    document.getElementById('downloadBtn').classList.remove('hidden');
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('loadingMessageContainer').style.display = 'none';
+                    stopWaitingMessages();
                 })
                 .catch(error => {
                     showErrorPopup(error.message);
-                    this.classList.remove('hidden');
+                    document.getElementById('createBtn').classList.remove('hidden');
                     document.getElementById('stopBtn').classList.add('hidden');
                     document.getElementById('loadingMessageContainer').style.display = 'none';
                     stopWaitingMessages();
