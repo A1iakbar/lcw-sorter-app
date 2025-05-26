@@ -189,6 +189,37 @@
                 opacity: 0;
             }
         }
+
+        .made-by {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .made-by:hover {
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .made-by i {
+            font-size: 1.1rem;
+        }
+
+        .made-by .name {
+            color: var(#fff);
+            transition: color 0.3s ease;
+        }
+
+        .made-by:hover .name {
+            color: var(--lcw-light-blue);
+        }
     </style>
 </head>
 <body>
@@ -208,6 +239,11 @@
             <i class="fas fa-arrow-right me-2"></i>Giriş Yap
         </button>
     </div>
+
+    <a href="https://www.linkedin.com/in/aliakbarrzayev/" target="_blank" class="made-by">
+        <i class="fab fa-linkedin"></i>
+        Made by <span class="name">Aliakbar</span>
+    </a>
 
     <script>
         function enterSite() {
