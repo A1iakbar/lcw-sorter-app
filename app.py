@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, send_file, jsonify
 import pandas as pd
 import os
 from werkzeug.utils import secure_filename
+import traceback
+import shutil
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -10,6 +12,19 @@ app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024  # 1000MB max file size
 # Create uploads folder if it doesn't exist
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
+
+def cleanup_files():
+    """Temizlik işlemleri için yardımcı fonksiyon"""
+    try:
+        for filename in os.listdir(app.config['UPLOAD_FOLDER']):
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(f"Error deleting {file_path}: {e}")
+    except Exception as e:
+        print(f"Error during cleanup: {e}")
 
 @app.route('/')
 def login():
@@ -29,12 +44,14 @@ def kota():
 
 @app.route('/process_template', methods=['POST'])
 def process_template():
+    temp_filepath = None
     try:
         if 'file' not in request.files:
-            return jsonify({'error': 'No file uploaded'}), 400
+            return jsonify({'error': 'Dosya yüklenmedi'}), 400
+        
         file = request.files['file']
         if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
+            return jsonify({'error': 'Dosya seçilmedi'}), 400
 
         # Get sepet limits from form
         try:
@@ -49,13 +66,13 @@ def process_template():
 
         # Save uploaded file
         filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+        temp_filepath = os.path.join(app.config['UPLOAD_FOLDER'], f'temp_{filename}')
+        file.save(temp_filepath)
 
         try:
             # Excel dosyasında sheet kontrolü
             try:
-                df = pd.read_excel(filepath, sheet_name='DepoCrossDock Rapor')
+                df = pd.read_excel(temp_filepath, sheet_name='DepoCrossDock Rapor')
             except ValueError as e:
                 return jsonify({'error': "Excel dosyasında 'DepoCrossDock Rapor' adlı bir sayfa (sheet) bulunamadı. Lütfen doğru dosyayı yükleyin."}), 400
             except Exception as e:
@@ -130,15 +147,32 @@ def process_template():
             return jsonify({'status': 'success'}), 200
             
         except Exception as e:
-            return jsonify({'error': f'Excel işleme hatası: {str(e)}'}), 500
+            error_msg = f'Excel işleme hatası: {str(e)}\n{traceback.format_exc()}'
+            print(error_msg)  # Sunucu loglarına yazdır
+            return jsonify({'error': 'Excel dosyası işlenirken bir hata oluştu. Lütfen dosyanızı kontrol edin.'}), 500
             
     except Exception as e:
-        return jsonify({'error': f'Beklenmeyen bir hata oluştu: {str(e)}'}), 500
+        error_msg = f'Beklenmeyen hata: {str(e)}\n{traceback.format_exc()}'
+        print(error_msg)  # Sunucu loglarına yazdır
+        return jsonify({'error': 'Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.'}), 500
+        
+    finally:
+        # Geçici dosyaları temizle
+        if temp_filepath and os.path.exists(temp_filepath):
+            try:
+                os.remove(temp_filepath)
+            except:
+                pass
 
 @app.route('/download_template')
 def download_template():
-    output_path = os.path.join(app.config['UPLOAD_FOLDER'], 'final_template.xlsx')
-    return send_file(output_path, as_attachment=True)
+    try:
+        output_path = os.path.join(app.config['UPLOAD_FOLDER'], 'final_template.xlsx')
+        if not os.path.exists(output_path):
+            return jsonify({'error': 'Template dosyası bulunamadı'}), 404
+        return send_file(output_path, as_attachment=True)
+    except Exception as e:
+        return jsonify({'error': 'Dosya indirme hatası'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True) 
